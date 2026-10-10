@@ -1,0 +1,244 @@
+{
+  "info": {
+    "_postman_id": "a6067043-9ad7-4109-b0f8-ca17474ddec5",
+    "name": "Restaurant Ordering API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+    "_exporter_id": "58698980",
+    "_collection_link": "https://go.postman.co/collection/58698980-a6067043-9ad7-4109-b0f8-ca17474ddec5?source=collection_link"
+  },
+  "item": [
+    {
+      "name": "Get Admin JWT token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"project_admin\",\r\n    \"password\": \"admin demo password\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://restaurant-ordering-api-6tae.onrender.com/api/token/",
+          "protocol": "https",
+          "host": [
+            "restaurant-ordering-api-6tae",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "token",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Update Order Status - Staff",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_076r}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PATCH",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"status\": \"preparing\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://restaurant-ordering-api-6tae.onrender.com/api/orders/1/status/",
+          "protocol": "https",
+          "host": [
+            "restaurant-ordering-api-6tae",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "orders",
+            "1",
+            "status",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Unavailable item",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_1175}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"items\": [\r\n        {\r\n            \"menu_item\": 3,\r\n            \"quantity\": 1\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://restaurant-ordering-api-6tae.onrender.com/api/orders/",
+          "protocol": "https",
+          "host": [
+            "restaurant-ordering-api-6tae",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "orders",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "List my orders",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_0877}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "GET",
+        "header": [],
+        "url": {
+          "raw": "https://restaurant-ordering-api-6tae.onrender.com/api/orders/",
+          "protocol": "https",
+          "host": [
+            "restaurant-ordering-api-6tae",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "orders",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Create order",
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{json_web_token_0877}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"items\": [\r\n        {\r\n            \"menu_item\": 1,\r\n            \"quantity\": 2\r\n        }\r\n    ]\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://restaurant-ordering-api-6tae.onrender.com/api/orders/",
+          "protocol": "https",
+          "host": [
+            "restaurant-ordering-api-6tae",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "orders",
+            ""
+          ]
+        }
+      },
+      "response": []
+    },
+    {
+      "name": "Get customer JWT token",
+      "request": {
+        "method": "POST",
+        "header": [],
+        "body": {
+          "mode": "raw",
+          "raw": "{\r\n    \"username\": \"customer1\",\r\n    \"password\": \"customer demo password\"\r\n}",
+          "options": {
+            "raw": {
+              "language": "json"
+            }
+          }
+        },
+        "url": {
+          "raw": "https://restaurant-ordering-api-6tae.onrender.com/api/token/",
+          "protocol": "https",
+          "host": [
+            "restaurant-ordering-api-6tae",
+            "onrender",
+            "com"
+          ],
+          "path": [
+            "api",
+            "token",
+            ""
+          ]
+        }
+      },
+      "response": []
+    }
+  ],
+  "variable": [
+    {
+      "key": "json_web_token_076r",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_1175",
+      "secret": true
+    },
+    {
+      "key": "json_web_token_0877",
+      "secret": true
+    }
+  ]
+}
