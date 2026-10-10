@@ -1,8 +1,18 @@
 # Restaurant Ordering API
 
-A REST API for a restaurant food ordering system built with Django and Django REST Framework.
+A RESTful Restaurant Ordering API built with Django and Django REST Framework.
 
-The API allows customers to browse available menu items, place orders, view their own orders, and modify pending orders. Staff users can manage order statuses.
+The API allows customers to browse available menu items, place and manage orders, and track order status. Staff users can manage order status through a controlled workflow.
+
+## Live Deployment
+
+The API is deployed on Render:
+
+https://restaurant-ordering-api-6tae.onrender.com
+
+Live menu endpoint:
+
+https://restaurant-ordering-api-6tae.onrender.com/api/menu/
 
 ## Technologies Used
 
@@ -10,28 +20,191 @@ The API allows customers to browse available menu items, place orders, view thei
 - Django
 - Django REST Framework
 - Simple JWT
-- SQLite
-- Postman
+- PostgreSQL
+- Gunicorn
+- Uvicorn
+- WhiteNoise
+- Render
 
 ## Features
 
+- Browse available menu items
 - JWT authentication
-- View available menu items
-- Place orders containing multiple menu items
-- Automatically calculate order totals
-- View customer-specific orders
+- Place restaurant orders
+- View customer orders
+- View individual orders
 - Add items to pending orders
 - Remove items from pending orders
-- Prevent modification after preparation begins
-- Prevent unavailable menu items from being ordered
+- Computed order totals
+- Customer-specific order access
 - Staff-only order status management
-- Controlled order status transitions
 - Order filtering by status
+- Validation of unavailable menu items
+- Controlled order status transitions
 - Automated API tests
 
-## Installation
+## Authentication
 
-Clone or extract the project and navigate into the project directory.
+The API uses JWT authentication.
+
+### Obtain Access and Refresh Tokens
+
+**POST**
+
+`/api/token/`
+
+Example request:
+
+```json
+{
+    "username": "customer1",
+    "password": "your-password"
+}
+```
+
+Example response:
+
+```json
+{
+    "refresh": "refresh-token",
+    "access": "access-token"
+}
+```
+
+For protected endpoints, send the access token using:
+
+`Authorization: Bearer <access_token>`
+
+### Refresh Access Token
+
+**POST**
+
+`/api/token/refresh/`
+
+```json
+{
+    "refresh": "your-refresh-token"
+}
+```
+
+## API Endpoints
+
+| Method | Endpoint | Description | Access |
+|---|---|---|---|
+| GET | `/api/menu/` | List available menu items | Public |
+| POST | `/api/orders/` | Place a new order | Customer |
+| GET | `/api/orders/` | View customer's orders | Customer |
+| GET | `/api/orders/{id}/` | View a specific order | Order owner |
+| PATCH | `/api/orders/{id}/add-item/` | Add an item to a pending order | Order owner |
+| DELETE | `/api/orders/{id}/items/{item_id}/` | Remove an item from a pending order | Order owner |
+| PATCH | `/api/orders/{id}/status/` | Update order status | Staff only |
+| POST | `/api/token/` | Obtain JWT tokens | Public |
+| POST | `/api/token/refresh/` | Refresh JWT access token | Public |
+
+## Placing an Order
+
+**POST**
+
+`/api/orders/`
+
+Example:
+
+```json
+{
+    "items": [
+        {
+            "menu_item": 1,
+            "quantity": 2
+        }
+    ]
+}
+```
+
+A successfully created order returns HTTP `201 Created`.
+
+## Adding an Item to an Order
+
+**PATCH**
+
+`/api/orders/{id}/add-item/`
+
+Example:
+
+```json
+{
+    "menu_item": 2,
+    "quantity": 1
+}
+```
+
+Items can only be added while the order is `pending`.
+
+## Removing an Item
+
+**DELETE**
+
+`/api/orders/{id}/items/{item_id}/`
+
+Items can only be removed while the order is `pending`.
+
+## Order Status Workflow
+
+Valid order status transitions are:
+
+`pending → preparing → ready → completed`
+
+An order can also be cancelled only while it is pending:
+
+`pending → cancelled`
+
+Only staff users can update order status.
+
+Invalid status transitions return HTTP `400 Bad Request`.
+
+## Business Rules
+
+- Customers can only access their own orders.
+- Only pending orders can be modified.
+- Only staff users can update order status.
+- Unavailable menu items cannot be ordered.
+- Attempting to order an unavailable menu item returns HTTP `400 Bad Request`.
+- Order totals are calculated from the related order items.
+- Invalid order status transitions are rejected.
+
+## Filtering Orders
+
+Authenticated customers can filter their own orders by status.
+
+Example:
+
+`GET /api/orders/?status=pending`
+
+## Demo Accounts
+
+The following accounts can be used by the assessor to test customer and staff permissions.
+
+### Customer Account
+
+Username: `customer1`
+
+Password: `customer001`
+
+### Staff Account
+
+Username: `project_admin`
+
+Password: `charles1234`
+
+These accounts are for demonstration/testing purposes only.
+
+## Running the Project Locally
+
+Clone the repository:
+
+```bash
+git clone https://github.com/Charles-babs/restaurant-ordering-api.git
+cd restaurant-ordering-api
+```
 
 Create a virtual environment:
 
@@ -45,22 +218,16 @@ Activate it on Windows:
 venv\Scripts\activate
 ```
 
-Install the dependencies:
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-Run database migrations:
+Run migrations:
 
 ```bash
 python manage.py migrate
-```
-
-Create an administrator account if required:
-
-```bash
-python manage.py createsuperuser
 ```
 
 Start the development server:
@@ -69,173 +236,13 @@ Start the development server:
 python manage.py runserver
 ```
 
-The API will be available locally at:
+The local API will be available at:
 
 `http://127.0.0.1:8000/`
 
-## Authentication
+## Automated Tests
 
-This project uses JWT authentication.
-
-### Obtain Access and Refresh Tokens
-
-**POST**
-
-`/api/token/`
-
-Example request:
-
-```json
-{
-    "username": "your_username",
-    "password": "your_password"
-}
-```
-
-A successful request returns an access token and refresh token.
-
-Authenticated requests should send the access token using Bearer authentication.
-
-### Refresh Access Token
-
-**POST**
-
-`/api/token/refresh/`
-
-Example:
-
-```json
-{
-    "refresh": "your_refresh_token"
-}
-```
-
-## API Endpoints
-
-### View Menu
-
-**GET**
-
-`/api/menu/`
-
-Returns all menu items currently marked as available.
-
-Authentication is not required.
-
-### Create an Order
-
-**POST**
-
-`/api/orders/`
-
-Authentication is required.
-
-Example:
-
-```json
-{
-    "items": [
-        {
-            "menu_item": 1,
-            "quantity": 2
-        },
-        {
-            "menu_item": 2,
-            "quantity": 1
-        }
-    ]
-}
-```
-
-New orders are created with a `pending` status.
-
-The total price is calculated automatically from the prices and quantities of the related order items.
-
-### View Customer Orders
-
-**GET**
-
-`/api/orders/`
-
-Returns only orders belonging to the authenticated customer.
-
-Orders can optionally be filtered by status:
-
-`/api/orders/?status=pending`
-
-### View Specific Order
-
-**GET**
-
-`/api/orders/{id}/`
-
-Returns the specified order only if it belongs to the authenticated customer.
-
-### Add Item to Order
-
-**PATCH**
-
-`/api/orders/{id}/add-item/`
-
-Example:
-
-```json
-{
-    "menu_item": 3,
-    "quantity": 2
-}
-```
-
-Items can only be added while the order is `pending`.
-
-### Remove Item from Order
-
-**DELETE**
-
-`/api/orders/{id}/items/{item_id}/`
-
-Items can only be removed while the order is `pending`.
-
-### Update Order Status
-
-**PATCH**
-
-`/api/orders/{id}/status/`
-
-Only staff users can access this endpoint.
-
-Example:
-
-```json
-{
-    "status": "preparing"
-}
-```
-
-## Order Status Rules
-
-The normal order sequence is:
-
-`pending → preparing → ready → completed`
-
-An order may also transition:
-
-`pending → cancelled`
-
-Invalid transitions are rejected with a `400 Bad Request` response.
-
-Completed and cancelled orders cannot transition to another status.
-
-## Business Rules
-
-1. Customers can only access their own orders.
-2. Orders can only be modified while their status is `pending`.
-3. Only staff users can update order statuses.
-4. Unavailable menu items cannot be added to an order.
-5. Order status transitions must follow the allowed sequence.
-6. Order totals are calculated from the related order items rather than stored directly on the Order model.
-
-## Running Automated Tests
+The project includes automated tests covering important API business rules and permissions.
 
 Run:
 
@@ -243,22 +250,26 @@ Run:
 python manage.py test
 ```
 
-The test suite verifies important API behavior including:
+Tests include:
 
-- Customers cannot view another customer's orders.
-- Unavailable menu items cannot be ordered.
-- Normal customers cannot update order status.
-- Staff users can perform valid status transitions.
+- A customer cannot view another customer's order.
+- An unavailable menu item cannot be ordered.
+- A customer cannot change an order's status.
+- Staff can change a pending order to preparing.
 - Invalid status transitions are rejected.
 
-## Admin Panel
+## Deployment
 
-The Django administration interface is available at:
+The project is deployed on Render using:
 
-`http://127.0.0.1:8000/admin/`
+- Render Web Service
+- Render PostgreSQL
+- Gunicorn/Uvicorn
+- Environment variables for sensitive configuration
+- WhiteNoise for static files
 
-Staff or superuser credentials are required.
+The virtual environment, local SQLite database, environment files, and generated static files are excluded from the Git repository.
 
 ## Author
 
-Restaurant Ordering API — Django REST Framework Project
+Charles Babatunde
